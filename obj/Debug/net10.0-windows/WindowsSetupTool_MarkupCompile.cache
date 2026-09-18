@@ -1,5 +1,5 @@
 ﻿WindowsSetupTool
-1.0.0.0
+
 
 winexe
 C#
@@ -12,7 +12,7 @@ TRACE;DEBUG;NET;NET10_0;NETCOREAPP;WINDOWS;WINDOWS7_0;NET5_0_OR_GREATER;NET6_0_O
 C:\Users\a.kay\Desktop\Projekte\WindowsSetupTool\App.xaml
 11939815530
 
-101349589573
+8451435364
 2071206333651
 UI\MainWindow.xaml;
 

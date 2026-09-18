@@ -33,6 +33,13 @@ public partial class MainWindow : Window
     {
         _explorerSettingsTasks.Add(new SetupTask
         {
+            Name = "Altes Kontextmenü aktivieren",
+            Description = "Aktiviert das von Windows 10 bekannte Kontextmenü.",
+            IsSelected = true,
+            Execute = ExplorerSettings.EnableClassicContextMenu
+        });
+        _explorerSettingsTasks.Add(new SetupTask
+        {
             Name = "Dateiendungen anzeigen",
             Description = "Zeigt bekannte Dateiendungen im Windows Explorer an.",
             IsSelected = true,

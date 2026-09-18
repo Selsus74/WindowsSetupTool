@@ -1,19 +1,23 @@
 ﻿<Window
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d" x:Class="WindowsSetupTool.UI.MainWindow"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        x:Class="WindowsSetupTool.UI.MainWindow"
         Title="Windows Setup Tool"
         Height="650"
         Width="850"
         MinHeight="550"
         MinWidth="700"
+        WindowState="Maximized"
         WindowStartupLocation="CenterScreen"
         Background="#181A1F"
         Foreground="#F1F3F5">
 
     <Window.Resources>
 
-        <!-- colors -->
+        <!-- ===== Static Colors ===== -->
         <SolidColorBrush x:Key="BackgroundBrush" Color="#181A1F"/>
         <SolidColorBrush x:Key="CardBrush" Color="#22252B"/>
         <SolidColorBrush x:Key="CardBorderBrush" Color="#30343C"/>
@@ -22,7 +26,7 @@
         <SolidColorBrush x:Key="AccentBrush" Color="#4C8DFF"/>
         <SolidColorBrush x:Key="AccentHoverBrush" Color="#6BA0FF"/>
 
-        <!-- standard buttons -->
+        <!-- ===== Style: Standard Buttons ===== -->
         <Style TargetType="{x:Type Button}">
             <Setter Property="Background" Value="#2A2E36"/>
             <Setter Property="Foreground" Value="#F1F3F5"/>
@@ -81,7 +85,7 @@
             </Setter>
         </Style>
 
-        <!-- PrimaryButton -->
+        <!-- ===== Style: Primary Button ===== -->
         <Style x:Key="PrimaryButton"
                TargetType="{x:Type Button}"
                BasedOn="{StaticResource {x:Type Button}}">
@@ -138,13 +142,166 @@
             </Setter>
         </Style>
 
-        <!-- ProgressBar -->
+        <!-- ===== Style: Progressbar ===== -->
         <Style TargetType="{x:Type ProgressBar}">
 
             <Setter Property="Height" Value="8"/>
             <Setter Property="Background" Value="{StaticResource CardBrush}"/>
             <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
 
+        </Style>
+
+        <!-- ===== Style: Group Cards ===== -->
+
+        <Style x:Key="GroupCard" TargetType="{x:Type Border}">
+            <Setter Property="Background" Value="{StaticResource CardBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource CardBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="18"/>
+            <Setter Property="Margin" Value="0,0,0,14"/>
+        </Style>
+
+        <Style x:Key="GroupTitle" TargetType="{x:Type TextBlock}">
+            <Setter Property="FontSize" Value="17"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+        </Style>
+
+        <Style x:Key="GroupHint" TargetType="{x:Type TextBlock}">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush}"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="Margin" Value="0,4,0,0"/>
+        </Style>
+
+        <!-- ===== Style: Card Title Seperator Line ===== -->
+        <Style x:Key="GroupSeparator" TargetType="{x:Type Border}">
+            <Setter Property="Height" Value="1"/>
+            <Setter Property="Background" Value="#2E323A"/>
+            <Setter Property="Margin" Value="0,14,0,12"/>
+        </Style>
+
+        <!-- ===== Style: Checkboxes ===== -->
+
+        <Style TargetType="{x:Type CheckBox}">
+            <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type CheckBox}">
+
+                        <Grid Background="Transparent">
+
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Border x:Name="Box"
+                                    Width="18"
+                                    Height="18"
+                                    CornerRadius="4"
+                                    Background="#2A2E36"
+                                    BorderBrush="#3A3F49"
+                                    BorderThickness="1"
+                                    VerticalAlignment="Center">
+
+                                <Path x:Name="Check"
+                                      Data="M 0,4 L 3.5,7.5 L 9,1"
+                                      Stroke="White"
+                                      StrokeThickness="2"
+                                      StrokeStartLineCap="Round"
+                                      StrokeEndLineCap="Round"
+                                      StrokeLineJoin="Round"
+                                      HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"
+                                      Visibility="Collapsed"/>
+
+                            </Border>
+
+                            <ContentPresenter Grid.Column="1"
+                                              Margin="10,0,0,0"
+                                              VerticalAlignment="Center"
+                                              RecognizesAccessKey="True"/>
+
+                        </Grid>
+
+                        <ControlTemplate.Triggers>
+
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Box" Property="Background" Value="{StaticResource AccentBrush}"/>
+                                <Setter TargetName="Box" Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+                                <Setter TargetName="Check" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Box" Property="BorderBrush" Value="{StaticResource AccentHoverBrush}"/>
+                            </Trigger>
+
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.45"/>
+                            </Trigger>
+
+                        </ControlTemplate.Triggers>
+
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ===== Style: Scrollbar ===== -->
+
+        <Style x:Key="ScrollThumb" TargetType="{x:Type Thumb}">
+            <Setter Property="IsTabStop" Value="False"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Thumb}">
+                        <Border x:Name="ThumbBorder"
+                                Background="#3A3F49"
+                                CornerRadius="4"
+                                Margin="2,0,0,0"/>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ThumbBorder" Property="Background" Value="#4E5560"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="{x:Type ScrollBar}">
+            <Setter Property="Width" Value="10"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ScrollBar}">
+                        <Grid Background="{TemplateBinding Background}">
+                            <Track x:Name="PART_Track"
+                                   IsDirectionReversed="True">
+                                <Track.DecreaseRepeatButton>
+                                    <RepeatButton Command="ScrollBar.PageUpCommand"
+                                                  Opacity="0"
+                                                  Focusable="False"/>
+                                </Track.DecreaseRepeatButton>
+                                <Track.Thumb>
+                                    <Thumb Style="{StaticResource ScrollThumb}"/>
+                                </Track.Thumb>
+                                <Track.IncreaseRepeatButton>
+                                    <RepeatButton Command="ScrollBar.PageDownCommand"
+                                                  Opacity="0"
+                                                  Focusable="False"/>
+                                </Track.IncreaseRepeatButton>
+                            </Track>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
     </Window.Resources>
@@ -161,7 +318,7 @@
         </Grid.RowDefinitions>
 
 
-        <!-- ================= HEADER ================= -->
+        <!-- ===== HEADER ===== -->
 
         <StackPanel Grid.Row="0"
                     Margin="0,0,0,25">
@@ -179,7 +336,7 @@
         </StackPanel>
 
 
-        <!-- ================= SYSTEM INFORMATION ================= -->
+        <!-- ===== SYSTEM INFORMATION ===== -->
 
         <Border Grid.Row="1"
                 Background="{StaticResource CardBrush}"
@@ -224,78 +381,76 @@
         </Border>
 
 
-        <!-- ================= TASKS ================= -->
+        <!-- ===== TASKS ===== -->
 
-        <!-- ================= Explorer ============== -->
-        <Border Grid.Row="2"
-                Background="{StaticResource CardBrush}"
-                BorderBrush="{StaticResource CardBorderBrush}"
-                BorderThickness="1"
-                CornerRadius="8"
-                Padding="18" Margin="395,0,0,140">
+        <ScrollViewer Grid.Row="2"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled"
+                      Padding="0,0,12,0"
+                      Margin="0,0,-12,0">
 
-            <Grid>
+            <StackPanel>
 
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
+                <!-- ===== Group: Users ===== -->
 
+                <Border Style="{StaticResource GroupCard}">
+                    <StackPanel>
 
-                <TextBlock Grid.Row="0"
-                           Text="Explorer"
-                           FontSize="17"
-                           FontWeight="SemiBold"
-                           Margin="0,0,0,15"/>
+                        <TextBlock Text="Benutzer"
+                   Style="{StaticResource GroupTitle}"/>
 
+                        <TextBlock Text="Konto, Anmeldung und persönliche Einstellungen."
+                   Style="{StaticResource GroupHint}"/>
 
-                <ScrollViewer Grid.Row="1"
-                              VerticalScrollBarVisibility="Auto">
+                        <Border Style="{StaticResource GroupSeparator}"/>
 
-                    <StackPanel x:Name="TaskPanel"/>
+                        <StackPanel x:Name="TaskPanel1"/>
 
-                </ScrollViewer>
+                    </StackPanel>
+                </Border>
 
-            </Grid>
+                <!-- ===== Group: Explorer ===== -->
 
-        </Border>
+                <Border Style="{StaticResource GroupCard}">
+                    <StackPanel>
 
-        <!-- ================= User ============== -->
-        <Border Grid.Row="2"
-            Background="{StaticResource CardBrush}"
-            BorderBrush="{StaticResource CardBorderBrush}"
-            BorderThickness="1"
-            CornerRadius="8"
-            Padding="18" Margin="0,0,395,140">
+                        <TextBlock Text="Explorer"
+                                   Style="{StaticResource GroupTitle}"/>
 
-            <Grid>
+                        <TextBlock Text="Anzeigeoptionen und Verhalten des Datei-Explorers."
+                                   Style="{StaticResource GroupHint}"/>
 
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
+                        <Border Style="{StaticResource GroupSeparator}"/>
 
+                        <StackPanel x:Name="TaskPanel"/>
 
-                <TextBlock Grid.Row="0"
-                    Text="User"
-                    FontSize="17"
-                    FontWeight="SemiBold"
-                    Margin="0,0,0,15"/>
+                    </StackPanel>
+                </Border>
 
+                <!-- ===== Group: System (templated) ===== -->
 
-                <ScrollViewer Grid.Row="1"
-                    VerticalScrollBarVisibility="Auto">
+                <Border Style="{StaticResource GroupCard}">
+                    <StackPanel>
 
-                    <StackPanel x:Name="TaskPanel1"/>
+                        <TextBlock Text="System"
+                                   Style="{StaticResource GroupTitle}"/>
 
-                </ScrollViewer>
+                        <TextBlock Text="Energie, Updates und Dienste."
+                                   Style="{StaticResource GroupHint}"/>
 
-            </Grid>
+                        <Border Style="{StaticResource GroupSeparator}"/>
 
-        </Border>
+                        <StackPanel x:Name="TaskPanel2"/>
+
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+
+        </ScrollViewer>
 
 
-        <!-- ================= PROGRESS ================= -->
+        <!-- ===== PROGRESS ===== -->
 
         <StackPanel Grid.Row="3"
                     Margin="0,20,0,15">
@@ -305,7 +460,8 @@
                 <TextBlock Text="Fortschritt"
                            FontWeight="SemiBold"/>
 
-                <TextBlock Text="0%"
+                <TextBlock x:Name="ProgressText"
+                           Text="0%"
                            HorizontalAlignment="Right"
                            Foreground="{StaticResource SecondaryTextBrush}"/>
 
@@ -326,7 +482,7 @@
         </StackPanel>
 
 
-        <!-- ================= BUTTONS ================= -->
+        <!-- ===== BUTTONS ===== -->
 
         <StackPanel Grid.Row="4"
                     Orientation="Horizontal"
