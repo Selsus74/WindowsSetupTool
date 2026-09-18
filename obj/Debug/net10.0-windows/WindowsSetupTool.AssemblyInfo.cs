@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("WindowsSetupTool")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f592e07c461386233754da51709acd9bd6362704")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f880278b8bdb22047df8866540afe8fb7f598fab")]
 [assembly: System.Reflection.AssemblyProductAttribute("WindowsSetupTool")]
 [assembly: System.Reflection.AssemblyTitleAttribute("WindowsSetupTool")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

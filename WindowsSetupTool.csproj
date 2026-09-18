@@ -11,6 +11,7 @@
   <ItemGroup>
 	<Folder Include="UI\" />
     <Folder Include="Models\" />
+	<Folder Include="Setup\" /> 
     <Folder Include="Helpers\" />
   </ItemGroup>
 

@@ -10,6 +10,7 @@ namespace WindowsSetupTool.UI;
 public partial class MainWindow : Window
 {
     private readonly List<SetupTask> _explorerSettingsTasks = [];
+    private readonly List<SetupTask> _userSettingsTasks = [];
 
     public MainWindow()
     {
@@ -31,6 +32,15 @@ public partial class MainWindow : Window
 
     private void CreateTasks()
     {
+        _userSettingsTasks.Add(new SetupTask
+        {
+            Name = "Neuen Benutzer Anlegen",
+            Description = "Erstellt einen neuen lokalen Benutzer.",
+            IsSelected = false,
+            Execute = ExplorerSettings.EnableClassicContextMenu
+        });
+
+
         _explorerSettingsTasks.Add(new SetupTask
         {
             Name = "Altes Kontextmenü aktivieren",
@@ -47,10 +57,12 @@ public partial class MainWindow : Window
         });
     }
 
+    //---renders the tasks in the taskform---
     private void DisplayTasks()
     {
         TaskPanel.Children.Clear();
 
+        //--explorer settings (just a checkbox)--
         foreach (SetupTask task in _explorerSettingsTasks)
         {
             CheckBox checkBox = new()
