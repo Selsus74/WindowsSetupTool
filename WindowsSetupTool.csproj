@@ -6,7 +6,13 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+	<ApplicationIcon>Resources\WindowsSetupTool.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Resources\WindowsSetupTool.ico" />
+  </ItemGroup>
 
   <ItemGroup>
 	<Folder Include="UI\" />
@@ -17,6 +23,13 @@
 
   <ItemGroup>
     <PackageReference Include="System.Management" Version="10.0.12" />
+	<PackageReference Include="System.DirectoryServices.AccountManagement" Version="10.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\WindowsSetupTool.ico">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
   </ItemGroup>
 
 </Project>

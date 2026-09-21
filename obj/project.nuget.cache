@@ -1,10 +1,12 @@
 {
   "version": 2,
-  "dgSpecHash": "RFnw8RrdU40=",
+  "dgSpecHash": "2vBNOuHUs9c=",
   "success": true,
   "projectFilePath": "C:\\Users\\a.kay\\Desktop\\Projekte\\WindowsSetupTool\\WindowsSetupTool.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\a.kay\\.nuget\\packages\\system.management\\10.0.12\\system.management.10.0.12.nupkg.sha512"
+    "C:\\Users\\Administrator.HELPS\\.nuget\\packages\\system.directoryservices.accountmanagement\\10.0.0\\system.directoryservices.accountmanagement.10.0.0.nupkg.sha512",
+    "C:\\Users\\Administrator.HELPS\\.nuget\\packages\\system.directoryservices.protocols\\10.0.0\\system.directoryservices.protocols.10.0.0.nupkg.sha512",
+    "C:\\Users\\Administrator.HELPS\\.nuget\\packages\\system.management\\10.0.12\\system.management.10.0.12.nupkg.sha512"
   ],
   "logs": []
 }

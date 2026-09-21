@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         x:Class="WindowsSetupTool.UI.MainWindow"
+        Icon="pack://application:,,,/Resources/WindowsSetupTool.ico"
         Title="Windows Setup Tool"
         Height="650"
         Width="850"
@@ -404,7 +405,7 @@
 
                         <Border Style="{StaticResource GroupSeparator}"/>
 
-                        <StackPanel x:Name="TaskPanel1"/>
+                        <StackPanel x:Name="UserTaskPanel"/>
 
                     </StackPanel>
                 </Border>
@@ -422,7 +423,7 @@
 
                         <Border Style="{StaticResource GroupSeparator}"/>
 
-                        <StackPanel x:Name="TaskPanel"/>
+                        <StackPanel x:Name="ExplorerTaskPanel"/>
 
                     </StackPanel>
                 </Border>
@@ -440,7 +441,7 @@
 
                         <Border Style="{StaticResource GroupSeparator}"/>
 
-                        <StackPanel x:Name="TaskPanel2"/>
+                        <StackPanel x:Name="SystemTaskPanel"/>
 
                     </StackPanel>
                 </Border>

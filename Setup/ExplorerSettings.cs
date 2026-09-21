@@ -7,17 +7,19 @@ namespace WindowsSetupTool.Setup;
 
 public static class ExplorerSettings
 {
+    //---enables the win10 style context menu---
     public static void EnableClassicContextMenu()
     {
         using var key = Registry.CurrentUser.CreateSubKey(
             @"Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32");
         key.SetValue("", "", RegistryValueKind.String);
 
-        RestartExplorerSilently();
+        Logger.Info("Enabled Classic Contextmenu");
 
-        Logger.Log("activated classic contextmenu");
+        RestartExplorerSilently();
     }
 
+    //---shows the file extensions in explorer---
     public static void ShowFileExtensions()
     {
         using RegistryKey? key =
@@ -29,25 +31,31 @@ public static class ExplorerSettings
             0,
             RegistryValueKind.DWord);
 
-        Logger.Log("show file extensions enabled");
+        Logger.Info("Enabled File Extensions");
     }
 
+    //---method for restarting the explorer after pending changes---
     public static void RestartExplorerSilently()
     {
         var explorerProcesses = Process.GetProcessesByName("explorer");
         foreach (var process in explorerProcesses)
             process.Kill();
+        Logger.Info("Explorer-Process has been stopped - waiting for restart...");
 
-        // Windows startet den Shell-Prozess selbstständig neu.
-        // Kurz abwarten und prüfen, ob er wieder läuft.
-        for (int i = 0; i < 20; i++) // max. ~10 Sekunden warten
+        //---windows automatically restarts the explorer after a moment
+        //---wait and check if it runs again
+        for (int i = 0; i < 20; i++) // waits for ~10sec
         {
             Thread.Sleep(500);
             if (Process.GetProcessesByName("explorer").Length > 0)
-                return; // Shell ist wieder da, fertig
+            {
+                Logger.Info("Explorer has been auto restarted");
+                return; // exits if process is automatically restarted within 10secs
+            }
         }
 
-        // Falls Windows es ausnahmsweise nicht selbst getan hat: manuell nachhelfen
+        //---if not autostarted in time, gets manually started---
         Process.Start(new ProcessStartInfo("explorer.exe") { UseShellExecute = true });
+        Logger.Warning("Explorer has been manually restarted");
     }
 }
