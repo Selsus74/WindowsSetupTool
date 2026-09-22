@@ -1,22 +1,32 @@
-﻿using System.Windows;
+﻿using System.CodeDom.Compiler;
+using System.Linq.Expressions;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Media;
+using WindowsSetupTool.Helpers;
 using WindowsSetupTool.Models;
 using WindowsSetupTool.Setup;
-using WindowsSetupTool.Helpers;
-using System.Linq.Expressions;
 
 namespace WindowsSetupTool.UI;
 
 public partial class MainWindow : Window
 {
+    //---system tasks predefine---
+    private readonly SetupTask setHostnameTask = new();
+    private readonly CheckBox setHostnameCheckBox = new();
+    private readonly TextBox setHostnameTextBox = new();
+
     //---user tasks predefine
-    private readonly SetupTask CreateNewLocalUserTask = new();
+    private readonly SetupTask createNewLocalUserTask = new();
     private readonly CheckBox createUserCheckbox = new();
     private readonly TextBox usernameBox = new();
     private readonly PasswordBox userPasswordBox = new();
     private readonly CheckBox userIsAdminCheckBox = new();
+
+    private readonly SetupTask activateAdminTask = new();
+    private readonly CheckBox activateAdminCheckbox = new();
+    private readonly PasswordBox adminPasswordBox = new();
 
     //---explorer task list predefine---
     private readonly List<SetupTask> _explorerSettingsTasks = [];
@@ -45,11 +55,23 @@ public partial class MainWindow : Window
     //---create tasks---
     private void CreateTasks()
     {
+        //---create system tasks---
+        setHostnameTask.Name = "Hostnamen ändern";
+        setHostnameTask.Description = "Hostnamen des Geräts festlegen.";
+        setHostnameTask.IsSelected = false;
+        setHostnameTask.Execute = null;
+
         //---create user tasks---
-        CreateNewLocalUserTask.Name = "Neuen Benutzer Anlegen";
-        CreateNewLocalUserTask.Description = "Erstellt einen neuen lokalen Benutzer.";
-        CreateNewLocalUserTask.IsSelected = false;
-        CreateNewLocalUserTask.Execute = null;
+        createNewLocalUserTask.Name = "Neuen Benutzer Anlegen";
+        createNewLocalUserTask.Description = "Erstellt einen neuen lokalen Benutzer.";
+        createNewLocalUserTask.IsSelected = false;
+        createNewLocalUserTask.Execute = null;
+
+        //---create admin tasks---
+        activateAdminTask.Name = "Lokalen Administrator aktivieren";
+        activateAdminTask.Description = "Aktiviert den standard lokalen Administrator.";
+        activateAdminTask.IsSelected = false;
+        activateAdminTask.Execute = null;
 
         //---create explorer tasks---
         _explorerSettingsTasks.Add(new SetupTask
@@ -71,14 +93,40 @@ public partial class MainWindow : Window
     //---renders the tasks in the taskform---
     private void DisplayTasks()
     {
+        //=====SYSTEM TASKS=====
+        SystemTaskPanel.Children.Clear();
+
+        setHostnameCheckBox.Content = CreateTaskContent(setHostnameTask);
+        setHostnameCheckBox.IsChecked = setHostnameTask.IsSelected;
+        setHostnameCheckBox.Tag = setHostnameTask;
+        setHostnameCheckBox.Margin = new Thickness(0, 5, 0, 5);
+
+        //---add stackpanel for inputs---
+        StackPanel hostnameInputPanel = new()
+        {
+            Margin = new Thickness(20, 0, 0, 10),
+            IsEnabled = createNewLocalUserTask.IsSelected   // initial status from task
+        };
+
+        setHostnameTextBox.Margin = new Thickness(0, 2, 0, 2);
+        hostnameInputPanel.Children.Add(new TextBlock { Text = "Hostname:" });
+        hostnameInputPanel.Children.Add(setHostnameTextBox);
+
+        SystemTaskPanel.Children.Add(setHostnameCheckBox);
+        SystemTaskPanel.Children.Add(hostnameInputPanel);
+
+        //---eventhandler switches input form depending on initial user checkbox---
+        setHostnameCheckBox.Checked += (s, e) => hostnameInputPanel.IsEnabled = true;
+        setHostnameCheckBox.Unchecked += (s, e) => hostnameInputPanel.IsEnabled = false;
+
         //=====USER SETTINGS=====
         //---clear panel---
         UserTaskPanel.Children.Clear();
 
         //---add user checkbox---
-        createUserCheckbox.Content = CreateTaskContent(CreateNewLocalUserTask);
-        createUserCheckbox.IsChecked = CreateNewLocalUserTask.IsSelected;
-        createUserCheckbox.Tag = CreateNewLocalUserTask;
+        createUserCheckbox.Content = CreateTaskContent(createNewLocalUserTask);
+        createUserCheckbox.IsChecked = createNewLocalUserTask.IsSelected;
+        createUserCheckbox.Tag = createNewLocalUserTask;
         createUserCheckbox.Margin = new Thickness(0, 5, 0, 5);
         
         UserTaskPanel.Children.Add(createUserCheckbox);
@@ -87,7 +135,7 @@ public partial class MainWindow : Window
         StackPanel userInputPanel = new()
         {
             Margin = new Thickness(20, 0, 0, 10),
-            IsEnabled = CreateNewLocalUserTask.IsSelected   // initial status from task
+            IsEnabled = createNewLocalUserTask.IsSelected   // initial status from task
         };
 
         //---input forms in stackpanel---
@@ -109,6 +157,33 @@ public partial class MainWindow : Window
         //---eventhandler switches input form depending on initial user checkbox---
         createUserCheckbox.Checked += (s, e) => userInputPanel.IsEnabled = true;
         createUserCheckbox.Unchecked += (s, e) => userInputPanel.IsEnabled = false;
+
+
+        //=====ADMIN SETTINGS=====
+        //---add admin checkbox---
+        activateAdminCheckbox.Content = CreateTaskContent(activateAdminTask);
+        activateAdminCheckbox.IsChecked = activateAdminTask.IsSelected;
+        activateAdminCheckbox.Tag = activateAdminTask;
+        activateAdminCheckbox.Margin = new Thickness(0, 5, 0, 5);
+        adminPasswordBox.Margin = new Thickness(0, 2, 0, 2);
+
+        //---add stackpanel for inputs---
+        StackPanel adminInputPanel = new()
+        {
+            Margin = new Thickness(20, 0, 0, 10),
+            IsEnabled = activateAdminTask.IsSelected   // initial status from task
+        };
+
+        //---add input and text to input panel---
+        adminInputPanel.Children.Add(new TextBlock { Text = "Passwort:" });
+        adminInputPanel.Children.Add(adminPasswordBox);
+        //---add checkbox and corresponding input panel to taskpanel---
+        UserTaskPanel.Children.Add(activateAdminCheckbox);
+        UserTaskPanel.Children.Add(adminInputPanel);
+
+        //---eventhandler switches input form depending on initial user checkbox---
+        activateAdminCheckbox.Checked += (s, e) => adminInputPanel.IsEnabled = true;
+        activateAdminCheckbox.Unchecked += (s, e) => adminInputPanel.IsEnabled = false;
 
 
         //=====EXPLORER SETTINGS=====
@@ -170,23 +245,55 @@ public partial class MainWindow : Window
         //---create list for all selected tasks---
         List<SetupTask> selectedTasks = [];
 
+        //---system tasks define execute---
+        //---user tasks define execute with current values---
+        if (setHostnameCheckBox.IsChecked ?? false)
+        {
+            setHostnameTask.IsSelected = true;
+            setHostnameTask.Execute = () => SystemSettings.SetHostname(setHostnameTextBox.Text);
+
+            selectedTasks.Add(setHostnameTask);
+        }
+        else
+        {
+            setHostnameTask.IsSelected = false;
+            setHostnameTask.Execute = null;
+        }
+
         //---user tasks define execute with current values---
         if (createUserCheckbox.IsChecked ?? false)
         {
-            CreateNewLocalUserTask.IsSelected = true;
-            CreateNewLocalUserTask.Execute = () =>
+            createNewLocalUserTask.IsSelected = true;
+            createNewLocalUserTask.Execute = () =>
                 UserSettings.CreateLocalUser(
                     usernameBox.Text,
                     userPasswordBox.Password,
                     userIsAdminCheckBox.IsChecked ?? false
                 );
 
-            selectedTasks.Add(CreateNewLocalUserTask);
+            selectedTasks.Add(createNewLocalUserTask);
         }
         else
         {
-            CreateNewLocalUserTask.IsSelected = false;
-            CreateNewLocalUserTask.Execute = null;
+            createNewLocalUserTask.IsSelected = false;
+            createNewLocalUserTask.Execute = null;
+        }
+
+        // ---admin tasks define execute with current values---
+        if (activateAdminCheckbox.IsChecked ?? false)
+        {
+            activateAdminTask.IsSelected = true;
+            activateAdminTask.Execute = () =>
+                UserSettings.ActivateLocalAdmin(
+                    adminPasswordBox.Password
+                );
+
+            selectedTasks.Add(activateAdminTask);
+        }
+        else
+        {
+            activateAdminTask.IsSelected = false;
+            activateAdminTask.Execute = null;
         }
 
         //---get selected tasks from explorer task panel---

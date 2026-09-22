@@ -391,6 +391,23 @@
                       Margin="0,0,-12,0">
 
             <StackPanel>
+                <!-- ===== Group: System ===== -->
+
+                <Border Style="{StaticResource GroupCard}">
+                    <StackPanel>
+
+                        <TextBlock Text="System"
+                   Style="{StaticResource GroupTitle}"/>
+
+                        <TextBlock Text="Energie, Updates und Dienste."
+                   Style="{StaticResource GroupHint}"/>
+
+                        <Border Style="{StaticResource GroupSeparator}"/>
+
+                        <StackPanel x:Name="SystemTaskPanel"/>
+
+                    </StackPanel>
+                </Border>
 
                 <!-- ===== Group: Users ===== -->
 
@@ -428,20 +445,20 @@
                     </StackPanel>
                 </Border>
 
-                <!-- ===== Group: System (templated) ===== -->
+                <!-- ===== Group: Template (templated) ===== -->
 
                 <Border Style="{StaticResource GroupCard}">
                     <StackPanel>
 
-                        <TextBlock Text="System"
+                        <TextBlock Text="Template"
                                    Style="{StaticResource GroupTitle}"/>
 
-                        <TextBlock Text="Energie, Updates und Dienste."
+                        <TextBlock Text="Template."
                                    Style="{StaticResource GroupHint}"/>
 
                         <Border Style="{StaticResource GroupSeparator}"/>
 
-                        <StackPanel x:Name="SystemTaskPanel"/>
+                        <StackPanel x:Name="TempTaskPanel"/>
 
                     </StackPanel>
                 </Border>
