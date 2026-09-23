@@ -111,6 +111,7 @@ public partial class MainWindow : Window
         setHostnameTextBox.Margin = new Thickness(0, 2, 0, 2);
         hostnameInputPanel.Children.Add(new TextBlock { Text = "Hostname:" });
         hostnameInputPanel.Children.Add(setHostnameTextBox);
+        hostnameInputPanel.Children.Add(new TextBlock { Text = "Bitte Hostnamen eingeben", Foreground = new SolidColorBrush(Color.FromRgb(255, 0, 0)) });
 
         SystemTaskPanel.Children.Add(setHostnameCheckBox);
         SystemTaskPanel.Children.Add(hostnameInputPanel);
@@ -118,6 +119,14 @@ public partial class MainWindow : Window
         //---eventhandler switches input form depending on initial user checkbox---
         setHostnameCheckBox.Checked += (s, e) => hostnameInputPanel.IsEnabled = true;
         setHostnameCheckBox.Unchecked += (s, e) => hostnameInputPanel.IsEnabled = false;
+        //---eventhanlder for locking form if nothing gets specified---
+        setHostnameCheckBox.Checked += (s, e) =>
+        {
+
+        };
+        setHostnameCheckBox.Unchecked += (s, e) =>
+        {
+        };
 
         //=====USER SETTINGS=====
         //---clear panel---

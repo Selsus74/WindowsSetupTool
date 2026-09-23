@@ -10,6 +10,12 @@ namespace WindowsSetupTool.Setup
         //---method for setting hostname---
         public static void SetHostname(string hostname)
         {
+            if (hostname == null || hostname.Length <= 0)
+            {
+                Logger.Error("No hostname was specified - Skipping task!");
+                return; 
+            }
+
             try
             {
                 var psi = new ProcessStartInfo
