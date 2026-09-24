@@ -101,32 +101,62 @@ public partial class MainWindow : Window
         setHostnameCheckBox.Tag = setHostnameTask;
         setHostnameCheckBox.Margin = new Thickness(0, 5, 0, 5);
 
+        var hostnameWarningText = new TextBlock { Text = "Bitte vergeben Sie einen Hostnamen!", Foreground = new SolidColorBrush(Color.FromRgb(255, 0, 0)) };
+
         //---add stackpanel for inputs---
         StackPanel hostnameInputPanel = new()
         {
             Margin = new Thickness(20, 0, 0, 10),
-            IsEnabled = createNewLocalUserTask.IsSelected   // initial status from task
+            IsEnabled = setHostnameTask.IsSelected   // initial status from task
         };
-
+        //---hide warning if initial status is not selected---
+        if (!setHostnameTask.IsSelected)
+        {
+            hostnameWarningText.Visibility = Visibility.Hidden;
+        }
+        
         setHostnameTextBox.Margin = new Thickness(0, 2, 0, 2);
         hostnameInputPanel.Children.Add(new TextBlock { Text = "Hostname:" });
         hostnameInputPanel.Children.Add(setHostnameTextBox);
-        hostnameInputPanel.Children.Add(new TextBlock { Text = "Bitte Hostnamen eingeben", Foreground = new SolidColorBrush(Color.FromRgb(255, 0, 0)) });
+        hostnameInputPanel.Children.Add(hostnameWarningText);
 
         SystemTaskPanel.Children.Add(setHostnameCheckBox);
         SystemTaskPanel.Children.Add(hostnameInputPanel);
 
-        //---eventhandler switches input form depending on initial user checkbox---
-        setHostnameCheckBox.Checked += (s, e) => hostnameInputPanel.IsEnabled = true;
-        setHostnameCheckBox.Unchecked += (s, e) => hostnameInputPanel.IsEnabled = false;
-        //---eventhanlder for locking form if nothing gets specified---
+        //---eventhandlers for input form---
         setHostnameCheckBox.Checked += (s, e) =>
         {
+            hostnameInputPanel.IsEnabled = true;
 
+            if (!InputValidator.ValidateSingleTextBox(setHostnameTextBox))
+            {
+                hostnameWarningText.Visibility = Visibility.Visible;
+            }
+
+            startSetupButton.IsEnabled = InputValidator.ValidateAll(this);
         };
         setHostnameCheckBox.Unchecked += (s, e) =>
         {
+            hostnameInputPanel.IsEnabled = false;
+
+            hostnameWarningText.Visibility = Visibility.Hidden;
+
+            startSetupButton.IsEnabled = InputValidator.ValidateAll(this);
         };
+        setHostnameTextBox.TextChanged += (s, e) =>
+        {
+            if (InputValidator.ValidateSingleTextBox(setHostnameTextBox))
+            {
+                hostnameWarningText.Visibility = Visibility.Hidden;
+            }
+            else
+            {
+                hostnameWarningText.Visibility = Visibility.Visible;
+            }
+
+            startSetupButton.IsEnabled = InputValidator.ValidateAll(this);
+        };
+
 
         //=====USER SETTINGS=====
         //---clear panel---
@@ -140,12 +170,21 @@ public partial class MainWindow : Window
         
         UserTaskPanel.Children.Add(createUserCheckbox);
 
+        //---add warning texts---
+        var usernameWarningText = new TextBlock { Text = "Bitte vergeben Sie einen Benutzernamen!", Foreground = new SolidColorBrush(Color.FromRgb(255, 0, 0)) };
+        var userPasswordWarningText = new TextBlock { Text = "Bitte vergeben Sie ein Passwort!", Foreground = new SolidColorBrush(Color.FromRgb(255, 0, 0)) };
+
         //---add stackpanel for inputs---
         StackPanel userInputPanel = new()
         {
             Margin = new Thickness(20, 0, 0, 10),
             IsEnabled = createNewLocalUserTask.IsSelected   // initial status from task
         };
+        if (!createNewLocalUserTask.IsSelected)
+        {
+            usernameWarningText.Visibility = Visibility.Hidden;
+            userPasswordWarningText.Visibility = Visibility.Hidden;
+        }
 
         //---input forms in stackpanel---
         usernameBox.Margin = new Thickness(0, 2, 0, 2);
@@ -156,16 +195,61 @@ public partial class MainWindow : Window
         //---add all elements to stackpanel---
         userInputPanel.Children.Add(new TextBlock { Text = "Benutzername:" });
         userInputPanel.Children.Add(usernameBox);
+        userInputPanel.Children.Add(usernameWarningText);
         userInputPanel.Children.Add(new TextBlock { Text = "Passwort:" });
         userInputPanel.Children.Add(userPasswordBox);
+        userInputPanel.Children.Add(userPasswordWarningText);
         userInputPanel.Children.Add(userIsAdminCheckBox);
 
         //---add stackpanel to parent usertaskpanel---
         UserTaskPanel.Children.Add(userInputPanel);
 
-        //---eventhandler switches input form depending on initial user checkbox---
-        createUserCheckbox.Checked += (s, e) => userInputPanel.IsEnabled = true;
-        createUserCheckbox.Unchecked += (s, e) => userInputPanel.IsEnabled = false;
+        //---eventhandlers for input form---
+        createUserCheckbox.Checked += (s, e) =>
+        {
+            userInputPanel.IsEnabled = true;
+
+            if (!InputValidator.ValidateSingleTextBox(usernameBox))
+            {
+                usernameWarningText.Visibility = Visibility.Visible;
+            }
+
+            if (!InputValidator.ValidateSinglePasswordBox(userPasswordBox))
+            {
+                userPasswordWarningText.Visibility = Visibility.Visible;
+            }
+
+            startSetupButton.IsEnabled = InputValidator.ValidateAll(this);
+        };
+        createUserCheckbox.Unchecked += (s, e) =>
+        {
+            userInputPanel.IsEnabled = false;
+
+            usernameWarningText.Visibility = Visibility.Hidden;
+            userPasswordWarningText.Visibility = Visibility.Hidden;
+
+            startSetupButton.IsEnabled = InputValidator.ValidateAll(this);
+        };
+        usernameBox.TextChanged += (s, e) =>
+        {
+            if (InputValidator.ValidateSingleTextBox(usernameBox))
+            {
+                usernameWarningText.Visibility = Visibility.Hidden;
+            }
+            else usernameWarningText.Visibility = Visibility.Visible;
+
+            startSetupButton.IsEnabled = InputValidator.ValidateAll(this);
+        };
+        userPasswordBox.PasswordChanged += (s, e) =>
+        {
+            if (InputValidator.ValidateSinglePasswordBox(userPasswordBox))
+            {
+                userPasswordWarningText.Visibility = Visibility.Hidden;
+            }
+            else userPasswordWarningText.Visibility = Visibility.Visible;
+
+            startSetupButton.IsEnabled = InputValidator.ValidateAll(this);
+        };
 
 
         //=====ADMIN SETTINGS=====
@@ -210,6 +294,11 @@ public partial class MainWindow : Window
 
             ExplorerTaskPanel.Children.Add(checkBox);
         }
+    }
+
+    private void HostnameWarningText_TextInput(object sender, System.Windows.Input.TextCompositionEventArgs e)
+    {
+        throw new NotImplementedException();
     }
 
     private StackPanel CreateTaskContent(SetupTask task)

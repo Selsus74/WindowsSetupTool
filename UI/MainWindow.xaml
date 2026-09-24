@@ -141,6 +141,14 @@
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
+
+            <Style.Triggers>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Background" Value="#555555"/>
+                    <Setter Property="Foreground" Value="#AAAAAA"/>
+                    <Setter Property="Cursor" Value="Arrow"/>
+                </Trigger>
+            </Style.Triggers>
         </Style>
 
         <!-- ===== Style: Progressbar ===== -->
@@ -506,7 +514,8 @@
                     Orientation="Horizontal"
                     HorizontalAlignment="Right">
 
-            <Button Content="Einrichtung starten"
+            <Button x:Name="startSetupButton"
+                    Content="Einrichtung starten"
                     Width="180"
                     Height="38"
                     Style="{StaticResource PrimaryButton}"
