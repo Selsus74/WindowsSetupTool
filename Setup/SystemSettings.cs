@@ -1,5 +1,5 @@
 ﻿//---imports---
-using System.Diagnostics;
+using System.Management.Automation;
 using WindowsSetupTool.Helpers;
 //---namespace---
 namespace WindowsSetupTool.Setup
@@ -18,19 +18,25 @@ namespace WindowsSetupTool.Setup
 
             try
             {
-                var psi = new ProcessStartInfo
+                using var ps = PowerShell.Create();
+                ps.AddScript($"Rename-Computer -NewName '{hostname}' -Force -ErrorAction Stop");
+                var results = ps.Invoke();
+
+                if (ps.HadErrors)
                 {
-                    FileName = "powershell.exe",
-                    Arguments = $"-Command \"Rename-Computer -NewName '{hostname}' -Force\"",
-                    UseShellExecute = true,
-                    Verb = "runas"
-                };
-                Process.Start(psi);
-                Logger.Info($"Hostname set to: {hostname}");
+                    foreach (var error in ps.Streams.Error)
+                    {
+                        Logger.Error($"Error while trying to set up {hostname} as Hostname: {error.Exception.Message}");
+                    }
+                }
+                else
+                {
+                    Logger.Info($"Hostname set to: {hostname}");
+                }            
             }
             catch (Exception ex)
             {
-                Logger.Error($"Error while setting up Hostname: {ex}");
+                Logger.Error($"Error while trying to set up Hostname: {ex}");
             }
         }
     }
