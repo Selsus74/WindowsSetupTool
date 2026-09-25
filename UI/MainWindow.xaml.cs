@@ -472,12 +472,11 @@ public partial class MainWindow : Window
         }
 
         //---popup msgbox when done with error level summary---
-        MessageBox.Show(
-            $"Einrichtung beendet mit: {Logger.GetSummary()};",
-            "Setup abgeschlossen",
-            MessageBoxButton.OK,
-            MessageBoxImage.Information
-        );
+        var dialog = new ShowLogDialog($"Einrichtung beendet mit: {Logger.GetSummary()}")
+        {
+            Owner = this // centers the dialog over MainWindow
+        };
+        dialog.ShowDialog();
 
         //---reset if run again without closing---
         Logger.ResetCounters();

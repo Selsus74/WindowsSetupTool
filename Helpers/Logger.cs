@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Diagnostics;
+using System.IO;
 
 namespace WindowsSetupTool.Helpers;
 
@@ -13,9 +14,9 @@ public enum LogLevel
 public static class Logger
 {
     //---log directory---
-    private static readonly string LogDirectory = AppContext.BaseDirectory;
+    private static readonly string LogDirectory = Path.Combine(AppContext.BaseDirectory, "Logs");
     //---log file path---
-    private static readonly string LogFile = Path.Combine(LogDirectory, "setup.log");
+    private static readonly string LogFile = Path.Combine(LogDirectory, $"{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.log");
 
     //---log level counter---
     private static int _infoCount = 0;
@@ -34,7 +35,7 @@ public static class Logger
         {
             Directory.CreateDirectory(LogDirectory);
 
-            string line = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] [{level}] - {message}";
+            string line = "🔷" + $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] [{level}] - {message}";
 
             File.AppendAllText(LogFile, line + Environment.NewLine);
 
@@ -57,12 +58,12 @@ public static class Logger
         }
     }
 
-    //---short log wrapper (this will be used elsewhere---
+    //---short log wrapper (this will be used elsewhere)---
     public static void Info(string message) => Log(LogLevel.INFO, message);
     public static void Warning(string message) => Log(LogLevel.WARNING, message);
     public static void Error(string message) => Log(LogLevel.ERROR, message);
 
-    //---summary method for use in mainwindow---
+    //---summary method for use in mainwindow msg box---
     public static string GetSummary()
     {
         return $"{_infoCount} Info, {_warningCount} Warning(s), {_errorCount} Error(s)";
@@ -74,5 +75,14 @@ public static class Logger
         _infoCount = 0;
         _warningCount = 0;
         _errorCount = 0;
+    }
+
+    public static void OpenLatestLog()
+    {
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = LogFile,
+            UseShellExecute = true
+        });
     }
 }
