@@ -260,23 +260,63 @@ public partial class MainWindow : Window
         activateAdminCheckbox.Margin = new Thickness(0, 5, 0, 5);
         adminPasswordBox.Margin = new Thickness(0, 2, 0, 2);
 
+        var adminPasswordWarningText = new TextBlock { Text = "Bitte vergeben Sie ein Passwort!", Foreground = new SolidColorBrush(Color.FromRgb(255, 0, 0)) };
+
         //---add stackpanel for inputs---
         StackPanel adminInputPanel = new()
         {
             Margin = new Thickness(20, 0, 0, 10),
             IsEnabled = activateAdminTask.IsSelected   // initial status from task
         };
+        if (!activateAdminTask.IsSelected)
+        {
+            adminPasswordWarningText.Visibility = Visibility.Hidden;
+        }
 
         //---add input and text to input panel---
         adminInputPanel.Children.Add(new TextBlock { Text = "Passwort:" });
         adminInputPanel.Children.Add(adminPasswordBox);
+        adminInputPanel.Children.Add(adminPasswordWarningText);
         //---add checkbox and corresponding input panel to taskpanel---
         UserTaskPanel.Children.Add(activateAdminCheckbox);
         UserTaskPanel.Children.Add(adminInputPanel);
 
         //---eventhandler switches input form depending on initial user checkbox---
-        activateAdminCheckbox.Checked += (s, e) => adminInputPanel.IsEnabled = true;
-        activateAdminCheckbox.Unchecked += (s, e) => adminInputPanel.IsEnabled = false;
+        activateAdminCheckbox.Checked += (s, e) =>
+        {
+            adminInputPanel.IsEnabled = true;
+
+            if (InputValidator.ValidateSinglePasswordBox(adminPasswordBox))
+            {
+                adminPasswordWarningText.Visibility = Visibility.Hidden;
+            }
+            else
+            {
+                adminPasswordWarningText.Visibility = Visibility.Visible;
+            }
+
+            startSetupButton.IsEnabled = InputValidator.ValidateAll(this);
+        };
+        activateAdminCheckbox.Unchecked += (s, e) =>
+        { 
+            adminInputPanel.IsEnabled = false;
+            adminPasswordWarningText.Visibility = Visibility.Hidden;
+
+            startSetupButton.IsEnabled = InputValidator.ValidateAll(this);
+        };
+        adminPasswordBox.PasswordChanged += (s, e) =>
+        {
+            if (InputValidator.ValidateSinglePasswordBox(adminPasswordBox))
+            {
+                adminPasswordWarningText.Visibility = Visibility.Hidden;
+            }
+            else
+            {
+                adminPasswordWarningText.Visibility = Visibility.Visible;
+            }
+
+            startSetupButton.IsEnabled = InputValidator.ValidateAll(this);
+        };
 
 
         //=====EXPLORER SETTINGS=====
@@ -465,7 +505,7 @@ public partial class MainWindow : Window
             }
             else
             {
-                StatusText.Text = $"✔ Einrichtung mit ohne Fehler abgeschlossen";
+                StatusText.Text = $"✔ Einrichtung ohne Fehler abgeschlossen";
                 StatusText.Foreground = new SolidColorBrush(Color.FromRgb(76, 175, 80));
                 SetupProgress.Foreground = new SolidColorBrush(Color.FromRgb(76, 175, 80));
             }
