@@ -1,5 +1,6 @@
 ﻿//---imports---
 using System.Windows;
+using System.Windows.Media;
 using WindowsSetupTool.Helpers;
 //---namespace---
 namespace WindowsSetupTool.UI
@@ -10,6 +11,14 @@ namespace WindowsSetupTool.UI
         public ShowLogDialog(string message)
         {
             InitializeComponent();
+
+            SourceInitialized += (s, e) =>
+            {
+                var bg = ((SolidColorBrush)FindResource("WindowBorderBrush")).Color;
+                var text = ((SolidColorBrush)FindResource("TextBrush")).Color;
+                TitleBarHelper.Apply(this, bg, text);
+            };
+
             MessageText.Text = message;
         }
 

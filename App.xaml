@@ -4,6 +4,13 @@
              xmlns:local="clr-namespace:WindowsSetupTool"
              StartupUri="UI/MainWindow.xaml">
     <Application.Resources>
-         
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/UI/Styles/Colors.xaml"/>
+                <ResourceDictionary Source="/UI/Styles/Buttons.xaml"/>
+                <ResourceDictionary Source="/UI/Styles/Cards.xaml"/>
+                <ResourceDictionary Source="/UI/Styles/Controls.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
     </Application.Resources>
 </Application>

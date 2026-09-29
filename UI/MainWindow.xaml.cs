@@ -1,15 +1,14 @@
-﻿using System.CodeDom.Compiler;
-using System.Linq.Expressions;
+﻿//---imports---
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
 using System.Windows.Media;
 using WindowsSetupTool.Helpers;
 using WindowsSetupTool.Models;
 using WindowsSetupTool.Setup;
-
+//---namespace---
 namespace WindowsSetupTool.UI;
 
+//---class init---
 public partial class MainWindow : Window
 {
     //---system tasks predefine---
@@ -31,10 +30,17 @@ public partial class MainWindow : Window
     //---explorer task list predefine---
     private readonly List<SetupTask> _explorerSettingsTasks = [];
 
-    //---main window---
+    //---invoke main window---
     public MainWindow()
     {
         InitializeComponent();
+
+        SourceInitialized += (s, e) =>
+        {
+            var bg = ((SolidColorBrush)FindResource("WindowBorderBrush")).Color;
+            var text = ((SolidColorBrush)FindResource("TextBrush")).Color;
+            TitleBarHelper.Apply(this, bg, text);
+        };
 
         LoadSystemInformation();
         CreateTasks();

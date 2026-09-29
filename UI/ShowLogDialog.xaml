@@ -6,7 +6,9 @@
         xmlns:local="clr-namespace:WindowsSetupTool.UI"
         mc:Ignorable="d"
         Title="Einrichtung abgeschlossen" Width="350" SizeToContent="Height"
-        WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
+        Background="{StaticResource BackgroundBrush}"
+        Foreground="{StaticResource ForegroundBrush}">
     <StackPanel Margin="20">
         <TextBlock Name="MessageText" TextWrapping="Wrap" Margin="0,0,0,20"/>
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">

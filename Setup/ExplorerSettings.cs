@@ -1,10 +1,11 @@
-﻿using Microsoft.Win32;
+﻿//---imports---
+using Microsoft.Win32;
 using System.Diagnostics;
-using System.Threading;
 using WindowsSetupTool.Helpers;
-
+//---namespace---
 namespace WindowsSetupTool.Setup;
 
+//---class init---
 public static class ExplorerSettings
 {
     //---enables the win10 style context menu---
