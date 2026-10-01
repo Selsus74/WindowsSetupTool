@@ -16,10 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Models\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.PowerShell.SDK" Version="7.6.6" />
     <PackageReference Include="System.Management" Version="10.0.12" />
 	<PackageReference Include="System.DirectoryServices.AccountManagement" Version="10.0.5" />

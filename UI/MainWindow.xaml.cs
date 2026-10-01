@@ -11,24 +11,30 @@ namespace WindowsSetupTool.UI;
 //---class init---
 public partial class MainWindow : Window
 {
+    //---progress helper init---
+    private readonly SetupProgressHelper _progressHelper;
+
     //---system tasks predefine---
-    private readonly SetupTask setHostnameTask = new();
-    private readonly CheckBox setHostnameCheckBox = new();
-    private readonly TextBox setHostnameTextBox = new();
+    private readonly SetupTask _setHostnameTask = new();
+    private readonly CheckBox _setHostnameCheckBox = new();
+    private readonly TextBox _setHostnameTextBox = new();
 
     //---user tasks predefine
-    private readonly SetupTask createNewLocalUserTask = new();
-    private readonly CheckBox createUserCheckbox = new();
-    private readonly TextBox usernameBox = new();
-    private readonly PasswordBox userPasswordBox = new();
-    private readonly CheckBox userIsAdminCheckBox = new();
+    private readonly SetupTask _createNewLocalUserTask = new();
+    private readonly CheckBox _createUserCheckbox = new();
+    private readonly TextBox _usernameBox = new();
+    private readonly PasswordBox _userPasswordBox = new();
+    private readonly CheckBox _userIsAdminCheckBox = new();
 
-    private readonly SetupTask activateAdminTask = new();
-    private readonly CheckBox activateAdminCheckbox = new();
-    private readonly PasswordBox adminPasswordBox = new();
+    private readonly SetupTask _activateAdminTask = new();
+    private readonly CheckBox _activateAdminCheckbox = new();
+    private readonly PasswordBox _adminPasswordBox = new();
 
     //---explorer task list predefine---
     private readonly List<SetupTask> _explorerSettingsTasks = [];
+
+    //---software task list predefine---
+    private readonly List<SetupTask> _softwareInstallTasks = [];
 
     //---invoke main window---
     public MainWindow()
@@ -42,10 +48,15 @@ public partial class MainWindow : Window
             TitleBarHelper.Apply(this, bg, text);
         };
 
+        //---must be UI-Thread and before setting task execute---
+        _progressHelper = new SetupProgressHelper(new Progress<SetupProgressInfo>(OnProgressChanged));
+        _progressHelper.AllTasksCompleted += OnAllTasksCompleted;
+
+        SetupProgress.Minimum = 0;
+
         LoadSystemInformation();
         CreateTasks();
         DisplayTasks();
-        ResetProgressbar();
     }
 
     //---get sys info for window header---
@@ -62,22 +73,22 @@ public partial class MainWindow : Window
     private void CreateTasks()
     {
         //---create system tasks---
-        setHostnameTask.Name = "Hostnamen ändern";
-        setHostnameTask.Description = "Hostnamen des Geräts festlegen.";
-        setHostnameTask.IsSelected = false;
-        setHostnameTask.Execute = null;
+        _setHostnameTask.Name = "Hostnamen ändern";
+        _setHostnameTask.Description = "Hostnamen des Geräts festlegen.";
+        _setHostnameTask.IsSelected = false;
+        _setHostnameTask.Execute = null;
 
         //---create user tasks---
-        createNewLocalUserTask.Name = "Neuen Benutzer Anlegen";
-        createNewLocalUserTask.Description = "Erstellt einen neuen lokalen Benutzer.";
-        createNewLocalUserTask.IsSelected = false;
-        createNewLocalUserTask.Execute = null;
+        _createNewLocalUserTask.Name = "Neuen Benutzer Anlegen";
+        _createNewLocalUserTask.Description = "Erstellt einen neuen lokalen Benutzer.";
+        _createNewLocalUserTask.IsSelected = false;
+        _createNewLocalUserTask.Execute = null;
 
         //---create admin tasks---
-        activateAdminTask.Name = "Lokalen Administrator aktivieren";
-        activateAdminTask.Description = "Aktiviert den standard lokalen Administrator.";
-        activateAdminTask.IsSelected = false;
-        activateAdminTask.Execute = null;
+        _activateAdminTask.Name = "Lokalen Administrator aktivieren";
+        _activateAdminTask.Description = "Aktiviert den standard lokalen Administrator.";
+        _activateAdminTask.IsSelected = false;
+        _activateAdminTask.Execute = null;
 
         //---create explorer tasks---
         _explorerSettingsTasks.Add(new SetupTask
@@ -85,15 +96,30 @@ public partial class MainWindow : Window
             Name = "Altes Kontextmenü aktivieren",
             Description = "Aktiviert das von Windows 10 bekannte Kontextmenü.",
             IsSelected = true,
-            Execute = ExplorerSettings.EnableClassicContextMenu
+            Execute = () => ExplorerSettings.EnableClassicContextMenu(_progressHelper)
         });
         _explorerSettingsTasks.Add(new SetupTask
         {
             Name = "Dateiendungen anzeigen",
             Description = "Zeigt bekannte Dateiendungen im Windows Explorer an.",
             IsSelected = true,
-            Execute = ExplorerSettings.ShowFileExtensions
+            Execute = () => ExplorerSettings.ShowFileExtensions(_progressHelper)
         });
+
+        //---create software tasks---
+        //---get all software from repository---
+        SoftwareRepository softwareRepository = new SoftwareRepository();
+        var allSoftware = softwareRepository.GetAllSoftwares;
+        foreach (var software in allSoftware)
+        {
+            _softwareInstallTasks.Add(new SetupTask
+            {
+                Name = software.Name,
+                Description = $"Installiere {software.Name}",
+                IsSelected = false,
+                Execute = () => WingetInstaller.InstallAsync(software, _progressHelper)
+            });
+        }
     }
 
     //---renders the tasks in the taskform---
@@ -102,10 +128,10 @@ public partial class MainWindow : Window
         //=====SYSTEM TASKS=====
         SystemTaskPanel.Children.Clear();
 
-        setHostnameCheckBox.Content = CreateTaskContent(setHostnameTask);
-        setHostnameCheckBox.IsChecked = setHostnameTask.IsSelected;
-        setHostnameCheckBox.Tag = setHostnameTask;
-        setHostnameCheckBox.Margin = new Thickness(0, 5, 0, 5);
+        _setHostnameCheckBox.Content = CreateTaskContent(_setHostnameTask);
+        _setHostnameCheckBox.IsChecked = _setHostnameTask.IsSelected;
+        _setHostnameCheckBox.Tag = _setHostnameTask;
+        _setHostnameCheckBox.Margin = new Thickness(0, 5, 0, 5);
 
         var hostnameWarningText = new TextBlock { Text = "Bitte vergeben Sie einen Hostnamen!", Foreground = new SolidColorBrush(Color.FromRgb(255, 0, 0)) };
 
@@ -113,35 +139,35 @@ public partial class MainWindow : Window
         StackPanel hostnameInputPanel = new()
         {
             Margin = new Thickness(20, 0, 0, 10),
-            IsEnabled = setHostnameTask.IsSelected   // initial status from task
+            IsEnabled = _setHostnameTask.IsSelected   // initial status from task
         };
         //---hide warning if initial status is not selected---
-        if (!setHostnameTask.IsSelected)
+        if (!_setHostnameTask.IsSelected)
         {
             hostnameWarningText.Visibility = Visibility.Hidden;
         }
         
-        setHostnameTextBox.Margin = new Thickness(0, 2, 0, 2);
+        _setHostnameTextBox.Margin = new Thickness(0, 2, 0, 2);
         hostnameInputPanel.Children.Add(new TextBlock { Text = "Hostname:" });
-        hostnameInputPanel.Children.Add(setHostnameTextBox);
+        hostnameInputPanel.Children.Add(_setHostnameTextBox);
         hostnameInputPanel.Children.Add(hostnameWarningText);
 
-        SystemTaskPanel.Children.Add(setHostnameCheckBox);
+        SystemTaskPanel.Children.Add(_setHostnameCheckBox);
         SystemTaskPanel.Children.Add(hostnameInputPanel);
 
         //---eventhandlers for input form---
-        setHostnameCheckBox.Checked += (s, e) =>
+        _setHostnameCheckBox.Checked += (s, e) =>
         {
             hostnameInputPanel.IsEnabled = true;
 
-            if (!InputValidator.ValidateSingleTextBox(setHostnameTextBox))
+            if (!InputValidator.ValidateSingleTextBox(_setHostnameTextBox))
             {
                 hostnameWarningText.Visibility = Visibility.Visible;
             }
 
             startSetupButton.IsEnabled = InputValidator.ValidateAll(this);
         };
-        setHostnameCheckBox.Unchecked += (s, e) =>
+        _setHostnameCheckBox.Unchecked += (s, e) =>
         {
             hostnameInputPanel.IsEnabled = false;
 
@@ -149,9 +175,9 @@ public partial class MainWindow : Window
 
             startSetupButton.IsEnabled = InputValidator.ValidateAll(this);
         };
-        setHostnameTextBox.TextChanged += (s, e) =>
+        _setHostnameTextBox.TextChanged += (s, e) =>
         {
-            if (InputValidator.ValidateSingleTextBox(setHostnameTextBox))
+            if (InputValidator.ValidateSingleTextBox(_setHostnameTextBox))
             {
                 hostnameWarningText.Visibility = Visibility.Hidden;
             }
@@ -169,12 +195,12 @@ public partial class MainWindow : Window
         UserTaskPanel.Children.Clear();
 
         //---add user checkbox---
-        createUserCheckbox.Content = CreateTaskContent(createNewLocalUserTask);
-        createUserCheckbox.IsChecked = createNewLocalUserTask.IsSelected;
-        createUserCheckbox.Tag = createNewLocalUserTask;
-        createUserCheckbox.Margin = new Thickness(0, 5, 0, 5);
+        _createUserCheckbox.Content = CreateTaskContent(_createNewLocalUserTask);
+        _createUserCheckbox.IsChecked = _createNewLocalUserTask.IsSelected;
+        _createUserCheckbox.Tag = _createNewLocalUserTask;
+        _createUserCheckbox.Margin = new Thickness(0, 5, 0, 5);
         
-        UserTaskPanel.Children.Add(createUserCheckbox);
+        UserTaskPanel.Children.Add(_createUserCheckbox);
 
         //---add warning texts---
         var usernameWarningText = new TextBlock { Text = "Bitte vergeben Sie einen Benutzernamen!", Foreground = new SolidColorBrush(Color.FromRgb(255, 0, 0)) };
@@ -184,50 +210,50 @@ public partial class MainWindow : Window
         StackPanel userInputPanel = new()
         {
             Margin = new Thickness(20, 0, 0, 10),
-            IsEnabled = createNewLocalUserTask.IsSelected   // initial status from task
+            IsEnabled = _createNewLocalUserTask.IsSelected   // initial status from task
         };
-        if (!createNewLocalUserTask.IsSelected)
+        if (!_createNewLocalUserTask.IsSelected)
         {
             usernameWarningText.Visibility = Visibility.Hidden;
             userPasswordWarningText.Visibility = Visibility.Hidden;
         }
 
         //---input forms in stackpanel---
-        usernameBox.Margin = new Thickness(0, 2, 0, 2);
-        userPasswordBox.Margin = new Thickness(0, 2, 0, 2);
-        userIsAdminCheckBox.Content = "Als Administrator anlegen";
-        userIsAdminCheckBox.Margin = new Thickness(0, 2, 0, 2);
+        _usernameBox.Margin = new Thickness(0, 2, 0, 2);
+        _userPasswordBox.Margin = new Thickness(0, 2, 0, 2);
+        _userIsAdminCheckBox.Content = "Als Administrator anlegen";
+        _userIsAdminCheckBox.Margin = new Thickness(0, 2, 0, 2);
 
         //---add all elements to stackpanel---
         userInputPanel.Children.Add(new TextBlock { Text = "Benutzername:" });
-        userInputPanel.Children.Add(usernameBox);
+        userInputPanel.Children.Add(_usernameBox);
         userInputPanel.Children.Add(usernameWarningText);
         userInputPanel.Children.Add(new TextBlock { Text = "Passwort:" });
-        userInputPanel.Children.Add(userPasswordBox);
+        userInputPanel.Children.Add(_userPasswordBox);
         userInputPanel.Children.Add(userPasswordWarningText);
-        userInputPanel.Children.Add(userIsAdminCheckBox);
+        userInputPanel.Children.Add(_userIsAdminCheckBox);
 
         //---add stackpanel to parent usertaskpanel---
         UserTaskPanel.Children.Add(userInputPanel);
 
         //---eventhandlers for input form---
-        createUserCheckbox.Checked += (s, e) =>
+        _createUserCheckbox.Checked += (s, e) =>
         {
             userInputPanel.IsEnabled = true;
 
-            if (!InputValidator.ValidateSingleTextBox(usernameBox))
+            if (!InputValidator.ValidateSingleTextBox(_usernameBox))
             {
                 usernameWarningText.Visibility = Visibility.Visible;
             }
 
-            if (!InputValidator.ValidateSinglePasswordBox(userPasswordBox))
+            if (!InputValidator.ValidateSinglePasswordBox(_userPasswordBox))
             {
                 userPasswordWarningText.Visibility = Visibility.Visible;
             }
 
             startSetupButton.IsEnabled = InputValidator.ValidateAll(this);
         };
-        createUserCheckbox.Unchecked += (s, e) =>
+        _createUserCheckbox.Unchecked += (s, e) =>
         {
             userInputPanel.IsEnabled = false;
 
@@ -236,9 +262,9 @@ public partial class MainWindow : Window
 
             startSetupButton.IsEnabled = InputValidator.ValidateAll(this);
         };
-        usernameBox.TextChanged += (s, e) =>
+        _usernameBox.TextChanged += (s, e) =>
         {
-            if (InputValidator.ValidateSingleTextBox(usernameBox))
+            if (InputValidator.ValidateSingleTextBox(_usernameBox))
             {
                 usernameWarningText.Visibility = Visibility.Hidden;
             }
@@ -246,9 +272,9 @@ public partial class MainWindow : Window
 
             startSetupButton.IsEnabled = InputValidator.ValidateAll(this);
         };
-        userPasswordBox.PasswordChanged += (s, e) =>
+        _userPasswordBox.PasswordChanged += (s, e) =>
         {
-            if (InputValidator.ValidateSinglePasswordBox(userPasswordBox))
+            if (InputValidator.ValidateSinglePasswordBox(_userPasswordBox))
             {
                 userPasswordWarningText.Visibility = Visibility.Hidden;
             }
@@ -260,11 +286,11 @@ public partial class MainWindow : Window
 
         //=====ADMIN SETTINGS=====
         //---add admin checkbox---
-        activateAdminCheckbox.Content = CreateTaskContent(activateAdminTask);
-        activateAdminCheckbox.IsChecked = activateAdminTask.IsSelected;
-        activateAdminCheckbox.Tag = activateAdminTask;
-        activateAdminCheckbox.Margin = new Thickness(0, 5, 0, 5);
-        adminPasswordBox.Margin = new Thickness(0, 2, 0, 2);
+        _activateAdminCheckbox.Content = CreateTaskContent(_activateAdminTask);
+        _activateAdminCheckbox.IsChecked = _activateAdminTask.IsSelected;
+        _activateAdminCheckbox.Tag = _activateAdminTask;
+        _activateAdminCheckbox.Margin = new Thickness(0, 5, 0, 5);
+        _adminPasswordBox.Margin = new Thickness(0, 2, 0, 2);
 
         var adminPasswordWarningText = new TextBlock { Text = "Bitte vergeben Sie ein Passwort!", Foreground = new SolidColorBrush(Color.FromRgb(255, 0, 0)) };
 
@@ -272,27 +298,27 @@ public partial class MainWindow : Window
         StackPanel adminInputPanel = new()
         {
             Margin = new Thickness(20, 0, 0, 10),
-            IsEnabled = activateAdminTask.IsSelected   // initial status from task
+            IsEnabled = _activateAdminTask.IsSelected   // initial status from task
         };
-        if (!activateAdminTask.IsSelected)
+        if (!_activateAdminTask.IsSelected)
         {
             adminPasswordWarningText.Visibility = Visibility.Hidden;
         }
 
         //---add input and text to input panel---
         adminInputPanel.Children.Add(new TextBlock { Text = "Passwort:" });
-        adminInputPanel.Children.Add(adminPasswordBox);
+        adminInputPanel.Children.Add(_adminPasswordBox);
         adminInputPanel.Children.Add(adminPasswordWarningText);
         //---add checkbox and corresponding input panel to taskpanel---
-        UserTaskPanel.Children.Add(activateAdminCheckbox);
+        UserTaskPanel.Children.Add(_activateAdminCheckbox);
         UserTaskPanel.Children.Add(adminInputPanel);
 
         //---eventhandler switches input form depending on initial user checkbox---
-        activateAdminCheckbox.Checked += (s, e) =>
+        _activateAdminCheckbox.Checked += (s, e) =>
         {
             adminInputPanel.IsEnabled = true;
 
-            if (InputValidator.ValidateSinglePasswordBox(adminPasswordBox))
+            if (InputValidator.ValidateSinglePasswordBox(_adminPasswordBox))
             {
                 adminPasswordWarningText.Visibility = Visibility.Hidden;
             }
@@ -303,16 +329,16 @@ public partial class MainWindow : Window
 
             startSetupButton.IsEnabled = InputValidator.ValidateAll(this);
         };
-        activateAdminCheckbox.Unchecked += (s, e) =>
+        _activateAdminCheckbox.Unchecked += (s, e) =>
         { 
             adminInputPanel.IsEnabled = false;
             adminPasswordWarningText.Visibility = Visibility.Hidden;
 
             startSetupButton.IsEnabled = InputValidator.ValidateAll(this);
         };
-        adminPasswordBox.PasswordChanged += (s, e) =>
+        _adminPasswordBox.PasswordChanged += (s, e) =>
         {
-            if (InputValidator.ValidateSinglePasswordBox(adminPasswordBox))
+            if (InputValidator.ValidateSinglePasswordBox(_adminPasswordBox))
             {
                 adminPasswordWarningText.Visibility = Visibility.Hidden;
             }
@@ -340,11 +366,23 @@ public partial class MainWindow : Window
 
             ExplorerTaskPanel.Children.Add(checkBox);
         }
-    }
 
-    private void HostnameWarningText_TextInput(object sender, System.Windows.Input.TextCompositionEventArgs e)
-    {
-        throw new NotImplementedException();
+
+        //=====SOFTWARE INSTALLS=====
+        SoftwareTaskPanel.Children.Clear();
+
+        foreach (SetupTask task in _softwareInstallTasks)
+        {
+            CheckBox checkBox = new()
+            {
+                Content = CreateTaskContent(task),
+                IsChecked = task.IsSelected,
+                Tag = task,
+                Margin = new Thickness(0, 5, 0, 5)
+            };
+
+            SoftwareTaskPanel.Children.Add(checkBox);
+        }
     }
 
     private StackPanel CreateTaskContent(SetupTask task)
@@ -370,74 +408,75 @@ public partial class MainWindow : Window
         return panel;
     }
 
-    //---progressbar resetter---
-    private void ResetProgressbar()
-    {
-        StatusText.Text = "";
-        StatusText.Foreground = new SolidColorBrush(Color.FromRgb(76, 141, 255));
-        SetupProgress.Value = 0;
-        SetupProgress.Foreground = new SolidColorBrush(Color.FromRgb(76, 141, 255));
-    }
-
     //---start setup---
     private async void StartSetup_Click(
         object sender,
         RoutedEventArgs e)
     {
-        ResetProgressbar();
+        //---deactivate button until finished---
+        startSetupButton.IsEnabled = false;
+
+        //---reset Logger fixes if run again without closing---
+        Logger.ResetCounters();
+
+        //---reset progressbar color and text fixes visual glitch out if run again without closing---
+        SetupProgress.Foreground = new SolidColorBrush((Color)FindResource("SecondaryTextBrush"));
+        StatusText.Text = string.Empty;
+        StatusText.Foreground = new SolidColorBrush((Color)FindResource("SecondaryTextBrush"));
 
         //---create list for all selected tasks---
         List<SetupTask> selectedTasks = [];
 
         //---system tasks define execute---
-        //---user tasks define execute with current values---
-        if (setHostnameCheckBox.IsChecked ?? false)
+        if (_setHostnameCheckBox.IsChecked ?? false)
         {
-            setHostnameTask.IsSelected = true;
-            setHostnameTask.Execute = () => SystemSettings.SetHostname(setHostnameTextBox.Text);
+            _setHostnameTask.IsSelected = true;
+            _setHostnameTask.Execute = () => SystemSettings.SetHostname(_setHostnameTextBox.Text, _progressHelper);
 
-            selectedTasks.Add(setHostnameTask);
+            selectedTasks.Add(_setHostnameTask);
         }
         else
         {
-            setHostnameTask.IsSelected = false;
-            setHostnameTask.Execute = null;
+            _setHostnameTask.IsSelected = false;
+            _setHostnameTask.Execute = null;
         }
 
         //---user tasks define execute with current values---
-        if (createUserCheckbox.IsChecked ?? false)
+        if (_createUserCheckbox.IsChecked ?? false)
         {
-            createNewLocalUserTask.IsSelected = true;
-            createNewLocalUserTask.Execute = () =>
+            _createNewLocalUserTask.IsSelected = true;
+            _createNewLocalUserTask.Execute = () =>
                 UserSettings.CreateLocalUser(
-                    usernameBox.Text,
-                    userPasswordBox.Password,
-                    userIsAdminCheckBox.IsChecked ?? false
+                    _usernameBox.Text,
+                    _userPasswordBox.Password,
+                    _userIsAdminCheckBox.IsChecked ?? false,
+                    _progressHelper
                 );
 
-            selectedTasks.Add(createNewLocalUserTask);
+            selectedTasks.Add(_createNewLocalUserTask);
         }
         else
         {
-            createNewLocalUserTask.IsSelected = false;
-            createNewLocalUserTask.Execute = null;
+            _createNewLocalUserTask.IsSelected = false;
+            _createNewLocalUserTask.Execute = null;
         }
 
         // ---admin tasks define execute with current values---
-        if (activateAdminCheckbox.IsChecked ?? false)
+        if (_activateAdminCheckbox.IsChecked ?? false)
         {
-            activateAdminTask.IsSelected = true;
-            activateAdminTask.Execute = () =>
+            _activateAdminTask.IsSelected = true;
+            _activateAdminTask.Execute = () =>
                 UserSettings.ActivateLocalAdmin(
-                    adminPasswordBox.Password
+                    _adminPasswordBox.Password,
+                    _progressHelper
                 );
 
-            selectedTasks.Add(activateAdminTask);
+            selectedTasks.Add(_activateAdminTask);
         }
         else
         {
-            activateAdminTask.IsSelected = false;
-            activateAdminTask.Execute = null;
+            _activateAdminTask.IsSelected = false;
+            _activateAdminTask.Execute = null;
         }
 
         //---get selected tasks from explorer task panel---
@@ -450,8 +489,18 @@ public partial class MainWindow : Window
             }
         }
 
+        //---get selected tasks from software task panel---
+        foreach (CheckBox checkBox in SoftwareTaskPanel.Children.OfType<CheckBox>())
+        {
+            if (checkBox.Tag is SetupTask task &&
+                checkBox.IsChecked == true)
+            {
+                selectedTasks.Add(task);
+            }
+        }
 
 
+        //---msg box when no tasks are selected---
         if (selectedTasks.Count == 0)
         {
             MessageBox.Show(
@@ -463,69 +512,66 @@ public partial class MainWindow : Window
             return;
         }
 
-        SetupProgress.Minimum = 0;
-        SetupProgress.Maximum = selectedTasks.Count;
-        SetupProgress.Value = 0;
+        //---sets total tasks for progress helper class---
+        _progressHelper.TotalTasks = selectedTasks.Count;
 
+        //---start all selected tasks---
         foreach (SetupTask task in selectedTasks)
         {
-            try
+            if (task.Execute == null)
             {
-                StatusText.Text = $"Einrichtung läuft... ({SetupProgress.Value}/{SetupProgress.Maximum})";
-
-                await Task.Delay(300);
-
-                task.Execute?.Invoke();
-
-                SetupProgress.Value++;
-
-                StatusText.Text = $"Schritt beendet... ({SetupProgress.Value}/{SetupProgress.Maximum})";
+                //---if nothing to execute is defined in a task, report it as done---
+                //---otherwise the helper class would never reach total task count---
+                _progressHelper.ReportTaskCompleted();
+                continue;
             }
-            catch (Exception ex)
-            {
-                StatusText.Text =
-                    $"✗ Fehler bei: {task.Name}";
 
-                MessageBox.Show(
-                    $"Fehler bei:\n\n{task.Name}\n\n{ex.Message}",
-                    "Setup-Fehler",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
-            }
+            //---start task - dont await -> parallel---
+            //---error handling and progress updates are called in each class corresponding to the task---
+            _ = task.Execute();
         }
+    }
 
-        //---changes color of progress bar and sets status text with color depending on error levels---
-        if (SetupProgress.Value >= SetupProgress.Maximum)
+    //---method is called on progress changed event from handler class---
+    private void OnProgressChanged(SetupProgressInfo info)
+    {
+        SetupProgress.Maximum = info.Total;
+        SetupProgress.Value = info.Done;
+        StatusText.Text = $"Einrichtung läuft... ({info.Done}/{info.Total})";
+    }
+
+    //---method is called on event all tasks completed---
+    private void OnAllTasksCompleted(int failed)
+    {
+        startSetupButton.IsEnabled = true;
+
+        //---summarize failed tasks with warnings and errors---
+        //---changes progressbar text and color---
+        if (failed > 0 || Logger.ErrorCount > 0)
         {
-            if (Logger.ErrorCount > 0)
-            {
-                StatusText.Text = $"✘ Einrichtung mit {Logger.WarningCount} Warning(s) und {Logger.ErrorCount} Error(s) abgeschlossen";
-                StatusText.Foreground = new SolidColorBrush(Color.FromRgb(244, 45, 12));
-                SetupProgress.Foreground = new SolidColorBrush(Color.FromRgb(244, 45, 12));
-            }
-            else if (Logger.WarningCount > 0)
-            {
-                StatusText.Text = $"✘ Einrichtung mit {Logger.WarningCount} Warning(s) und {Logger.ErrorCount} Error(s) abgeschlossen";
-                StatusText.Foreground = new SolidColorBrush(Color.FromRgb(244, 179, 12));
-                SetupProgress.Foreground = new SolidColorBrush(Color.FromRgb(244, 179, 12));
-            }
-            else
-            {
-                StatusText.Text = $"✔ Einrichtung ohne Fehler abgeschlossen";
-                StatusText.Foreground = new SolidColorBrush(Color.FromRgb(76, 175, 80));
-                SetupProgress.Foreground = new SolidColorBrush(Color.FromRgb(76, 175, 80));
-            }
+            StatusText.Text = $"✘ Setup exited with {failed} failed tasks [{Logger.WarningCount} Warning(s) / {Logger.ErrorCount} Error(s)]";
+            StatusText.Foreground = new SolidColorBrush(Color.FromRgb(244, 45, 12));
+            SetupProgress.Foreground = new SolidColorBrush(Color.FromRgb(244, 45, 12));
         }
+        else if (failed > 0 || Logger.WarningCount > 0)
+        {
+            StatusText.Text = $"✘ Setup exited with {failed} failed tasks [{Logger.WarningCount} Warning(s) / {Logger.ErrorCount} Error(s)]";
+            StatusText.Foreground = new SolidColorBrush(Color.FromRgb(244, 179, 12));
+            SetupProgress.Foreground = new SolidColorBrush(Color.FromRgb(244, 179, 12));
+        }
+        else
+        {
+            StatusText.Text = $"✔ Setup completed successfully!";
+            StatusText.Foreground = new SolidColorBrush(Color.FromRgb(76, 175, 80));
+            SetupProgress.Foreground = new SolidColorBrush(Color.FromRgb(76, 175, 80));
+        }
+
 
         //---popup msgbox when done with error level summary---
-        var dialog = new ShowLogDialog($"Einrichtung beendet mit: {Logger.GetSummary()}")
+        var dialog = new ShowLogDialog($"Setup exited with: {Logger.GetSummary()}")
         {
             Owner = this // centers the dialog over MainWindow
         };
         dialog.ShowDialog();
-
-        //---reset if run again without closing---
-        Logger.ResetCounters();
-
     }
 }

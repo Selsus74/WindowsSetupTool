@@ -154,6 +154,24 @@
                     </StackPanel>
                 </Border>
 
+                <!-- ===== Group: Software ===== -->
+
+                <Border Style="{StaticResource GroupCard}">
+                    <StackPanel>
+
+                        <TextBlock Text="Software"
+                   Style="{StaticResource GroupTitle}"/>
+
+                        <TextBlock Text="Benötigte Software wählen."
+                   Style="{StaticResource GroupHint}"/>
+
+                        <Border Style="{StaticResource GroupSeparator}"/>
+
+                        <StackPanel x:Name="SoftwareTaskPanel"/>
+
+                    </StackPanel>
+                </Border>
+
                 <!-- ===== Group: Template (templated) ===== -->
 
                 <Border Style="{StaticResource GroupCard}">

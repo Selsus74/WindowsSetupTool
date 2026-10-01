@@ -8,36 +8,43 @@ namespace WindowsSetupTool.Setup
     internal class SystemSettings
     {
         //---method for setting hostname---
-        public static void SetHostname(string hostname)
+        public static Task SetHostname(string hostname, SetupProgressHelper progress)
         {
-            if (hostname == null || hostname.Length <= 0)
+            return Task.Run(() =>
             {
-                Logger.Error("No hostname was specified - Skipping task!");
-                return; 
-            }
-
-            try
-            {
-                using var ps = PowerShell.Create();
-                ps.AddScript($"Rename-Computer -NewName '{hostname}' -Force -ErrorAction Stop");
-                var results = ps.Invoke();
-
-                if (ps.HadErrors)
+                if (hostname == null || hostname.Length <= 0)
                 {
-                    foreach (var error in ps.Streams.Error)
+                    Logger.Error("No hostname was specified - Skipping task!");
+                    progress.ReportTaskFailed();
+                    return;
+                }
+
+                try
+                {
+                    using var ps = PowerShell.Create();
+                    ps.AddScript($"Rename-Computer -NewName '{hostname}' -Force -ErrorAction Stop");
+                    var results = ps.Invoke();
+
+                    if (ps.HadErrors)
                     {
-                        Logger.Error($"Error while trying to set up {hostname} as Hostname: {error.Exception.Message}");
+                        foreach (var error in ps.Streams.Error)
+                        {
+                            Logger.Error($"Error while trying to set up {hostname} as Hostname: {error.Exception.Message}");
+                        }
+                        progress.ReportTaskFailed();
+                    }
+                    else
+                    {
+                        Logger.Info($"Hostname set to: {hostname}");
+                        progress.ReportTaskCompleted();
                     }
                 }
-                else
+                catch (Exception ex)
                 {
-                    Logger.Info($"Hostname set to: {hostname}");
-                }            
-            }
-            catch (Exception ex)
-            {
-                Logger.Error($"Error while trying to set up Hostname: {ex}");
-            }
+                    Logger.Error($"Error while trying to set up Hostname: {ex}");
+                    progress.ReportTaskFailed();
+                }
+            });
         }
     }
 }

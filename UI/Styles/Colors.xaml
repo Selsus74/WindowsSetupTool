@@ -32,5 +32,10 @@
     <!-- ===== Scrollbar ===== -->
     <SolidColorBrush x:Key="ScrollThumbBrush" Color="#3A3F49"/>
     <SolidColorBrush x:Key="ScrollThumbHoverBrush" Color="#4E5560"/>
+    
+    <!-- ===== Visual Feedback Colors(lol) ===== -->
+    <SolidColorBrush x:Key="GreenBrush" Color="#4C8DFF"/>
+    <SolidColorBrush x:Key="YellowBrush" Color="#6BA0FF"/>
+    <SolidColorBrush x:Key="RedBrush" Color="#3A73D9"/>
 
 </ResourceDictionary>

@@ -9,34 +9,56 @@ namespace WindowsSetupTool.Setup;
 public static class ExplorerSettings
 {
     //---enables the win10 style context menu---
-    public static void EnableClassicContextMenu()
+    public static Task EnableClassicContextMenu(SetupProgressHelper progress)
     {
-        using var key = Registry.CurrentUser.CreateSubKey(
-            @"Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32");
-        key.SetValue("", "", RegistryValueKind.String);
+        return Task.Run(() =>
+        {
+            try
+            {
+                using var key = Registry.CurrentUser.CreateSubKey(
+                    @"Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32");
+                key.SetValue("", "", RegistryValueKind.String);
 
-        Logger.Info("Enabled Classic Contextmenu");
+                Logger.Info("Enabled Classic Contextmenu");
+                progress.ReportTaskCompleted();
 
-        RestartExplorerSilently();
+                RestartExplorerSilently();
+            }
+            catch (Exception)
+            {
+                progress.ReportTaskFailed();
+            }
+        });
+        
     }
 
     //---shows the file extensions in explorer---
-    public static void ShowFileExtensions()
+    public static Task ShowFileExtensions(SetupProgressHelper progress)
     {
-        using RegistryKey? key =
-            Registry.CurrentUser.CreateSubKey(
-                @"Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced");
+        return Task.Run(() =>
+        {
+            try
+            {
+                using RegistryKey? key = Registry.CurrentUser.CreateSubKey(
+                    @"Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced");
 
-        key?.SetValue(
-            "HideFileExt",
-            0,
-            RegistryValueKind.DWord);
+                key?.SetValue(
+                    "HideFileExt",
+                    0,
+                    RegistryValueKind.DWord);
 
-        Logger.Info("Enabled File Extensions");
+                Logger.Info("Enabled File Extensions");
+                progress.ReportTaskCompleted();
+            }
+            catch (Exception)
+            {
+                progress.ReportTaskFailed();
+            }
+        });
     }
 
     //---method for restarting the explorer after pending changes---
-    public static void RestartExplorerSilently()
+    public static async void RestartExplorerSilently()
     {
         var explorerProcesses = Process.GetProcessesByName("explorer");
         foreach (var process in explorerProcesses)
