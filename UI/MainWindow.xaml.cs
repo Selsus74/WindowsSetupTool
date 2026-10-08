@@ -108,7 +108,7 @@ public partial class MainWindow : Window
 
         //---create software tasks---
         //---get all software from repository---
-        SoftwareRepository softwareRepository = new SoftwareRepository();
+        SoftwareRepository softwareRepository = new();
         var allSoftware = softwareRepository.GetAllSoftwares;
         foreach (var software in allSoftware)
         {
