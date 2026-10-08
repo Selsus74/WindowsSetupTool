@@ -420,9 +420,9 @@ public partial class MainWindow : Window
         Logger.ResetCounters();
 
         //---reset progressbar color and text fixes visual glitch out if run again without closing---
-        SetupProgress.Foreground = new SolidColorBrush((Color)FindResource("SecondaryTextBrush"));
+        SetupProgress.Foreground = (SolidColorBrush)Application.Current.Resources["AccentBrush"];
         StatusText.Text = string.Empty;
-        StatusText.Foreground = new SolidColorBrush((Color)FindResource("SecondaryTextBrush"));
+        StatusText.Foreground = (SolidColorBrush)Application.Current.Resources["AccentBrush"];
 
         //---create list for all selected tasks---
         List<SetupTask> selectedTasks = [];
